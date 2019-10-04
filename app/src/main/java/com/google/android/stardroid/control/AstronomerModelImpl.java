@@ -78,7 +78,7 @@ public class AstronomerModelImpl implements AstronomerModel {
   private static final Vector3 SCREEN_DOWN_IN_PHONE_COORDS = new Vector3(1, 0, 0);
   private Vector3 screenInPhoneCoords = SCREEN_UP_IN_PHONE_COORDS;
   private static final Vector3 AXIS_OF_EARTHS_ROTATION = new Vector3(0, 0, 1);
-  private static final long MINIMUM_TIME_BETWEEN_CELESTIAL_COORD_UPDATES_MILLIS = 60000L;
+  private static final long MINIMUM_TIME_BETWEEN_CELESTIAL_COORD_UPDATES_MILLIS = 30000L;
 
   private MagneticDeclinationCalculator magneticDeclinationCalculator;
   private boolean autoUpdatePointing = true;
@@ -304,6 +304,8 @@ public class AstronomerModelImpl implements AstronomerModel {
                                                                    trueNorthCelestial);
     Vector3 magneticEastCelestial = vectorProduct(magneticNorthCelestial, upCelestial);
 
+    Log.wtf("CelestialLocal", magneticNorthCelestial + "/" + upCelestial + "/" + magneticEastCelestial);
+
     axesMagneticCelestialMatrix = new Matrix33(magneticNorthCelestial,
                                                upCelestial,
                                                magneticEastCelestial);
@@ -341,6 +343,9 @@ public class AstronomerModelImpl implements AstronomerModel {
       upPhone = scaleVector(down, -1);
       magneticEastPhone = vectorProduct(magneticNorthPhone, upPhone);
     }
+
+    Log.wtf("Celestial", magneticNorthPhone + "/" + upPhone + "/" + magneticEastPhone);
+
     // The matrix is orthogonal, so transpose it to find its inverse.
     // Easiest way to do that is to construct it from row vectors instead
     // of column vectors.

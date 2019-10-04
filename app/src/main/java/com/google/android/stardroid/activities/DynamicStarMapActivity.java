@@ -24,6 +24,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -70,9 +71,11 @@ import com.google.android.stardroid.touch.DragRotateZoomGestureDetector;
 import com.google.android.stardroid.touch.GestureInterpreter;
 import com.google.android.stardroid.touch.MapMover;
 import com.google.android.stardroid.units.GeocentricCoordinates;
+import com.google.android.stardroid.units.Matrix33;
 import com.google.android.stardroid.units.Vector3;
 import com.google.android.stardroid.util.Analytics;
 import com.google.android.stardroid.util.MathUtil;
+import com.google.android.stardroid.util.Matrix4x4;
 import com.google.android.stardroid.util.MiscUtil;
 import com.google.android.stardroid.util.SensorAccuracyMonitor;
 import com.google.android.stardroid.views.ButtonLayerView;
@@ -85,6 +88,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+
+import static com.google.android.stardroid.util.Geometry.matrixVectorMultiply;
 
 /**
  * The main map-rendering Activity.
@@ -108,6 +113,7 @@ public class DynamicStarMapActivity extends InjectableActivity
     private RendererController rendererController;
     private AstronomerModel model;
     private boolean horizontalRotation;
+    private int i;
 
     public RendererModelUpdateClosure(AstronomerModel model,
         RendererController rendererController, SharedPreferences sharedPreferences) {
@@ -127,6 +133,17 @@ public class DynamicStarMapActivity extends InjectableActivity
       float upX = pointing.getPerpendicularX();
       float upY = pointing.getPerpendicularY();
       float upZ = pointing.getPerpendicularZ();
+
+      if (i == 40) {
+
+        Matrix33 transformMatrix = new Matrix33(model.getNorth(), model.getEast(), model.getZenith(), true);
+        transformMatrix.transpose();
+        Vector3 coords = matrixVectorMultiply(transformMatrix, pointing.getLineOfSight());
+
+        Log.wtf("Pointing Results", "N " + coords.x + " / E " + coords.y + " / Z " + coords.z);
+        i = 0;
+      }
+      i++;
 
       rendererController.queueSetViewOrientation(directionX, directionY, directionZ, upX, upY, upZ);
 
