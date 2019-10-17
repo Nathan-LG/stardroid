@@ -344,7 +344,7 @@ public class AstronomerModelImpl implements AstronomerModel {
       magneticEastPhone = vectorProduct(magneticNorthPhone, upPhone);
     }
 
-    Log.wtf("Celestial", magneticNorthPhone + "/" + upPhone + "/" + magneticEastPhone);
+    //Log.wtf("Celestial", magneticNorthPhone + "/" + upPhone + "/" + magneticEastPhone);
 
     // The matrix is orthogonal, so transpose it to find its inverse.
     // Easiest way to do that is to construct it from row vectors instead

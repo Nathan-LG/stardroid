@@ -25,6 +25,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.stardroid.layers.LayerManager;
 import com.google.android.stardroid.util.Analytics;
@@ -196,9 +197,13 @@ public class StardroidApplication extends Application {
     // Minimum requirements
     if (hasDefaultSensor(Sensor.TYPE_ACCELEROMETER)) {
       if (hasDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)) {
-        Log.i(TAG, "Minimal sensors available");
-        analytics.trackEvent(
-            Analytics.SENSOR_CATEGORY, Analytics.SENSOR_AVAILABILITY, "Minimal Sensors: Yes", 1);
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+          Toast.makeText(this, "BLE not supported", Toast.LENGTH_SHORT).show();
+        } else {
+          Toast.makeText(this, "Minimal sensors available", Toast.LENGTH_SHORT).show();
+          analytics.trackEvent(
+                  Analytics.SENSOR_CATEGORY, Analytics.SENSOR_AVAILABILITY, "Minimal Sensors: Yes", 1);
+        }
       } else {
         Log.e(TAG, "No magnetic field sensor");
         analytics.trackEvent(

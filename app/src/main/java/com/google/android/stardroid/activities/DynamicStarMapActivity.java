@@ -16,6 +16,8 @@ package com.google.android.stardroid.activities;
 
 import android.app.FragmentManager;
 import android.app.SearchManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -74,6 +76,7 @@ import com.google.android.stardroid.units.GeocentricCoordinates;
 import com.google.android.stardroid.units.Matrix33;
 import com.google.android.stardroid.units.Vector3;
 import com.google.android.stardroid.util.Analytics;
+import com.google.android.stardroid.util.BluetoothControler;
 import com.google.android.stardroid.util.MathUtil;
 import com.google.android.stardroid.util.Matrix4x4;
 import com.google.android.stardroid.util.MiscUtil;
@@ -97,7 +100,32 @@ import static com.google.android.stardroid.util.Geometry.matrixVectorMultiply;
 public class DynamicStarMapActivity extends InjectableActivity
     implements OnSharedPreferenceChangeListener, HasComponent<DynamicStarMapComponent> {
   private static final int TIME_DISPLAY_DELAY_MILLIS = 1000;
+  public static Vector3 coords;
   private FullscreenControlsManager fullscreenControlsManager;
+  private Handler handler = new Handler();
+
+  private Runnable runnable = new Runnable() {
+
+    @Override
+    public void run() {
+      bluetoothControler.sendMessage("x" + DynamicStarMapActivity.coords.x);
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      bluetoothControler.sendMessage("y" + DynamicStarMapActivity.coords.y);
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      bluetoothControler.sendMessage("z" + DynamicStarMapActivity.coords.z);
+
+      handler.postDelayed(runnable, 1000);
+
+    }
+  };
 
   @Override
   public DynamicStarMapComponent getComponent() {
@@ -138,9 +166,10 @@ public class DynamicStarMapActivity extends InjectableActivity
 
         Matrix33 transformMatrix = new Matrix33(model.getNorth(), model.getEast(), model.getZenith(), true);
         transformMatrix.transpose();
-        Vector3 coords = matrixVectorMultiply(transformMatrix, pointing.getLineOfSight());
+        DynamicStarMapActivity.coords = matrixVectorMultiply(transformMatrix, pointing.getLineOfSight());
 
-        Log.wtf("Pointing Results", "N " + coords.x + " / E " + coords.y + " / Z " + coords.z);
+        Log.wtf("Pointing Results", "N " + DynamicStarMapActivity.coords.x + " / E " +
+                DynamicStarMapActivity.coords.y + " / Z " + DynamicStarMapActivity.coords.z);
         i = 0;
       }
       i++;
@@ -186,7 +215,6 @@ public class DynamicStarMapActivity extends InjectableActivity
   @Inject @Named("timetravelback") Provider<MediaPlayer> timeTravelBackNoiseProvider;
   private MediaPlayer timeTravelNoise;
   private MediaPlayer timeTravelBackNoise;
-  @Inject Handler handler;
   @Inject Analytics analytics;
   @Inject GooglePlayServicesChecker playServicesChecker;
   @Inject FragmentManager fragmentManager;
@@ -209,6 +237,10 @@ public class DynamicStarMapActivity extends InjectableActivity
   @Inject Animation flashAnimation;
   private ActivityLightLevelManager activityLightLevelManager;
   private long sessionStartTime;
+  private BluetoothAdapter bluetoothAdapter;
+  private BluetoothControler bluetoothControler;
+
+  private boolean running;
 
   @Override
   public void onCreate(Bundle icicle) {
@@ -221,6 +253,11 @@ public class DynamicStarMapActivity extends InjectableActivity
     daggerComponent.inject(this);
 
     sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+    // Initializes Bluetooth adapter.
+    final BluetoothManager bluetoothManager =
+            (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+    bluetoothAdapter = bluetoothManager.getAdapter();
 
     // Set up full screen mode, hide the system UI etc.
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
@@ -266,9 +303,16 @@ public class DynamicStarMapActivity extends InjectableActivity
   }
 
   private void checkForSensorsAndMaybeWarn() {
+    int REQUEST_ENABLE_BT = 1;
     SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     if (sensorManager != null && sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
         && sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
+
+      if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+      }
+
       Log.i(TAG, "Minimum sensors present");
       // We want to reset to auto mode on every restart, as users seem to get
       // stuck in manual mode and can't find their way out.
@@ -310,6 +354,8 @@ public class DynamicStarMapActivity extends InjectableActivity
     if (fullscreenControlsManager != null) {
       fullscreenControlsManager.flashTheControls();
     }
+
+    bluetoothControler = new BluetoothControler(bluetoothAdapter, this);
   }
 
   @Override
@@ -374,6 +420,19 @@ public class DynamicStarMapActivity extends InjectableActivity
         analytics.trackEvent(Analytics.USER_ACTION_CATEGORY,
             Analytics.MENU_ITEM, Analytics.HELP_OPENED_LABEL, 1);
         helpDialogFragment.show(fragmentManager, "Help Dialog");
+        break;
+      case R.id.bluetooth_connect:
+        bluetoothControler.switchConnection();
+        break;
+      case R.id.bluetooth_menu:
+        if (this.running) {
+          bluetoothControler.interrupt();
+          this.running = false;
+        } else {
+          this.running = true;
+          handler.post(runnable);
+          bluetoothControler.startAgain();
+        }
         break;
       case R.id.menu_item_dim:
         Log.d(TAG, "Toggling nightmode");
