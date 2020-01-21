@@ -13,6 +13,7 @@
 
     <style name="FullscreenActionBarStyle" parent="android:Widget.Holo.ActionBar">
         <item name="android:background">@color/black_overlay</item>
+        <item name="android:actionMenuTextColor">@color/absent_sensor</item>
     </style>
 
     <style name="TableRow_RowHeading" parent="TableRow_Element">

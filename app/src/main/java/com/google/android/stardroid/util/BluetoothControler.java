@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
@@ -34,6 +35,8 @@ public class BluetoothControler extends Thread {
     private boolean stop = false;
     private boolean connected = false;
 
+    private TextView textView;
+
     private String message = null;
 
     // Stops scanning after 10 seconds.
@@ -43,8 +46,9 @@ public class BluetoothControler extends Thread {
         new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                if (device.getAddress().equals("DC:61:83:59:D3:11")) {
+                if (device.getAddress().equals("DD:5A:3C:26:61:54")) {
                     bluetoothAdapter.stopLeScan(leScanCallback);
+
                     bluetoothGattCallback = new BluetoothGattCallback() {
                         @Override
                         public void onConnectionStateChange(BluetoothGatt gatt, int status,
@@ -52,6 +56,7 @@ public class BluetoothControler extends Thread {
                             if (newState == STATE_CONNECTED) {
                                 bluetoothGatt = gatt;
                                 connected = true;
+                                connectionState = STATE_CONNECTED;
                                 Log.wtf("BLE Device", "Connected to GATT server.");
 
                                 gatt.discoverServices();
@@ -59,6 +64,7 @@ public class BluetoothControler extends Thread {
                             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                                 bluetoothGatt = null;
                                 connected = false;
+                                connectionState = STATE_DISCONNECTED;
                                 Log.wtf("BLE Device", "Disconnected from GATT server.");
                             }
                         }
@@ -75,6 +81,7 @@ public class BluetoothControler extends Thread {
 
                             characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                             gatt.setCharacteristicNotification(characteristic, true);
+                            textView.setText("Moteurs connectés, pas d'envoi");
                         }
 
                     };
@@ -85,11 +92,13 @@ public class BluetoothControler extends Thread {
             }
         };
 
-    public BluetoothControler(BluetoothAdapter bluetoothAdapter, Context context) {
+    public BluetoothControler(BluetoothAdapter bluetoothAdapter, TextView textView, Context context) {
         this.bluetoothAdapter = bluetoothAdapter;
         this.handler = new Handler();
         this.context = context;
         this.bluetoothGatt = null;
+        this.textView = textView;
+        this.connected = false;
     }
 
     public void scanLeDevice(final boolean enable) {
@@ -99,16 +108,21 @@ public class BluetoothControler extends Thread {
                 @Override
                 public void run() {
                     mScanning = false;
+                    if (connectionState == STATE_DISCONNECTED) {
+                        textView.setText("Moteurs déconnectés");
+                    }
                     Log.wtf("BLE Device", "Stop scanning");
                     bluetoothAdapter.stopLeScan(leScanCallback);
                 }
             }, SCAN_PERIOD);
 
             mScanning = true;
+            textView.setText("Recherche des moteurs...");
             Log.wtf("BLE Device", "Start scanning");
             bluetoothAdapter.startLeScan(leScanCallback);
         } else {
             mScanning = false;
+            textView.setText("Moteurs déconnectés2");
             Log.wtf("BLE Device", "Stop scanning");
             bluetoothAdapter.stopLeScan(leScanCallback);
         }
@@ -116,6 +130,7 @@ public class BluetoothControler extends Thread {
 
     public void switchConnection() {
         if (this.connected) {
+            textView.setText("Moteurs déconnectés1");
             bluetoothGatt.disconnect();
         } else {
             this.scanLeDevice(true);
@@ -143,7 +158,8 @@ public class BluetoothControler extends Thread {
 
         while (true) {
             if (this.message != null && !this.stop) {
-                message = message.concat(";");
+                textView.setText("Moteurs connectés, envoi en cours...");
+                message = message.concat("\n");
                 Log.wtf("BLE Device", "Sent " + message);
                 byte[] messageBytes = new byte[0];
                 try {
@@ -162,6 +178,10 @@ public class BluetoothControler extends Thread {
                 }
 
                 this.message = null;
+            }
+
+            if (this.stop) {
+                textView.setText("Moteurs connectés, pas d'envoi");
             }
         }
 

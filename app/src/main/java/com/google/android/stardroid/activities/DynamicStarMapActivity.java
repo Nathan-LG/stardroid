@@ -108,19 +108,19 @@ public class DynamicStarMapActivity extends InjectableActivity
 
     @Override
     public void run() {
-      bluetoothControler.sendMessage("x" + DynamicStarMapActivity.coords.x);
+      bluetoothControler.sendMessage("x" + ((int) (DynamicStarMapActivity.coords.x * 100_000)));
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      bluetoothControler.sendMessage("y" + DynamicStarMapActivity.coords.y);
+      bluetoothControler.sendMessage("y" + ((int) (DynamicStarMapActivity.coords.y * 100_000)));
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      bluetoothControler.sendMessage("z" + DynamicStarMapActivity.coords.z);
+      bluetoothControler.sendMessage("z" + ((int) (DynamicStarMapActivity.coords.z * 100_000)));
 
       handler.postDelayed(runnable, 1000);
 
@@ -355,7 +355,7 @@ public class DynamicStarMapActivity extends InjectableActivity
       fullscreenControlsManager.flashTheControls();
     }
 
-    bluetoothControler = new BluetoothControler(bluetoothAdapter, this);
+    bluetoothControler = new BluetoothControler(bluetoothAdapter, (TextView) findViewById(R.id.bleStatus), this);
   }
 
   @Override
@@ -453,12 +453,6 @@ public class DynamicStarMapActivity extends InjectableActivity
           Log.d(TAG, "Resuming current time travel dialog.");
         }
         timeTravelDialogFragment.show(fragmentManager, "Time Travel");
-        break;
-      case R.id.menu_item_gallery:
-        Log.d(TAG, "Loading gallery");
-        analytics.trackEvent(Analytics.USER_ACTION_CATEGORY,
-            Analytics.MENU_ITEM, Analytics.GALLERY_OPENED_LABEL, 1);
-        startActivity(new Intent(this, ImageGalleryActivity.class));
         break;
       case R.id.menu_item_tos:
         Log.d(TAG, "Loading ToS");

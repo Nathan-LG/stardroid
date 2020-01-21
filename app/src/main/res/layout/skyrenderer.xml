@@ -8,12 +8,13 @@
   android:orientation="vertical"
   android:id="@+id/main_sky_view_root">
 
-  <FrameLayout
+    <FrameLayout
     android:id="@+id/main_sky_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_weight="1">
-    <android.opengl.GLSurfaceView
+
+        <android.opengl.GLSurfaceView
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
       android:id="@+id/skyrenderer_view" />
@@ -26,60 +27,88 @@
       android:id="@+id/view_mask"/>
 
     <!-- Include a place for all the modal controls. -->
-    <LinearLayout
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:orientation="vertical">
 
-      <!-- Include a place for the time travel player controls. -->
-      <include
-        layout="@layout/time_player"
-        android:gravity="top"
-        android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:visibility="gone" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-      <!-- Include a place for the search controls bar -->
-      <RelativeLayout
-        android:id="@+id/search_control_bar"
-        android:orientation="vertical"
-        android:padding="1dip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#20990099"
-        android:visibility="gone">
-        <ImageView
-          android:id="@+id/search_icon"
-          android:layout_width="34dip"
-          android:layout_height="wrap_content"
-          android:src="@drawable/search_lens_very_small"
-          android:paddingTop="10dip" />
-        <TextView
-          android:id="@+id/search_status_label"
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          android:layout_toRightOf="@id/search_icon"
-          android:paddingLeft="10dip"
-          android:textAppearance="?android:attr/textAppearanceMedium"
-          android:layout_marginLeft="2dip" />
-        <TextView
-          android:id="@+id/search_prompt"
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          android:text="@string/search_overlay_title"
-          android:layout_below="@id/search_status_label"
-          android:layout_marginLeft="34dip"
-          android:textAppearance="?android:attr/textAppearanceSmall" />
-        <ImageButton
-          android:id="@+id/cancel_search_button"
-          android:background="@android:color/transparent"
-          android:clickable="true"
-          android:layout_width="32dip"
-          android:layout_height="wrap_content"
-          android:src="@drawable/time_travel_close"
-          android:layout_alignParentRight="true" />
-      </RelativeLayout>
-    </LinearLayout>
+            <!-- Include a place for the time travel player controls. -->
+
+            <include
+                layout="@layout/time_player"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:visibility="gone" />
+
+            <!-- Include a place for the search controls bar -->
+
+            <TextView
+                android:id="@+id/bleStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20px"
+                android:layout_marginTop="150px"
+                android:background="#00F00404"
+                android:text="Moteurs déconnectés"
+                android:visibility="visible" />
+
+            <RelativeLayout
+                android:id="@+id/search_control_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#20990099"
+                android:orientation="vertical"
+                android:padding="1dip"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/search_icon"
+                    android:layout_width="34dip"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dip"
+                    android:src="@drawable/search_lens_very_small" />
+
+                <TextView
+                    android:id="@+id/search_prompt"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/search_status_label"
+                    android:layout_marginLeft="34dip"
+                    android:text="@string/search_overlay_title"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <TextView
+                    android:id="@+id/star_data"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/search_icon"
+                    android:layout_marginLeft="3dip"
+                    android:paddingTop="15dip"
+                    android:text="@string/star_data"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/search_status_label"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="2dip"
+                    android:layout_toRightOf="@id/search_icon"
+                    android:paddingLeft="10dip"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <ImageButton
+                    android:id="@+id/cancel_search_button"
+                    android:layout_width="32dip"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:src="@drawable/time_travel_close" />
+
+            </RelativeLayout>
+        </LinearLayout>
     <!--  The layers/providers button -->
     <com.google.android.stardroid.views.ButtonLayerView
         android:layout_width="wrap_content"
@@ -214,6 +243,7 @@
         </com.google.android.stardroid.views.ButtonLayerView>
       </FrameLayout>
     </RelativeLayout>
+
   </FrameLayout>
 </RelativeLayout>
 

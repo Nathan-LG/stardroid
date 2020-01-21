@@ -101,7 +101,6 @@
     <string name="time_travel_day_speed_back" translation_description="Label showing rate of travel through time">Traveling &lt; @ 1 day/sec</string>
     <string name="time_travel_week_speed_back" translation_description="Label showing rate of travel through time">Traveling &lt; @ 1 week/sec</string>
     <string name="use_sound_effects" translation_description="A preferences menu label">Enable sound</string>
-
     <string name="enable_layer_toast">Enabling %s layer</string>
     <string name="disable_layer_toast">Disabling %s layer</string>
     <string name="menu_gallery">Gallery</string>
@@ -110,6 +109,8 @@
     <string name="hubble_image_gallery_title">Sky Map Gallery</string>
     <string name="hubble_image">Hubble Image</string>
     <!--  TODO(johntaylor): currently unused -->
+
+    <string name="star_data">Star data</string>
 
     <string name="search_target_found_message" translation_description="displayed when a search target has been located">You found:</string>
     <string name="search_overlay_title" translation_description="title for search overlay">Point your phone toward the arrow</string>
